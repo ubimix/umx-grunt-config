@@ -22,7 +22,6 @@ module.exports = (function() {
         this.grunt.registerTask('inc', [ 'bump-only' ]);
         this.grunt.registerTask('incMinor', [ 'bump-only:minor' ]);
         this.grunt.registerTask('incMajor', [ 'bump-only:major' ]);
-        this.grunt.registerTask('commit', [ 'build', 'bump-commit' ]);
     };
 
     UmxGruntConfig.prototype.initBump = function(options) {
@@ -48,31 +47,23 @@ module.exports = (function() {
         }
     };
 
-    UmxGruntConfig.prototype.initWebpack = function() {
+    UmxGruntConfig.prototype.initWebpack = function(options) {
+        options = options || {};
         var pkg = this.config.pkg;
-        function getConf(filename, plugins) {
-            var result = {
+        var banner = this.getBanner();
+        var BannerPlugin = this.require('webpack/lib/BannerPlugin');
+        this.config.webpack = {
+            main : {
                 entry : './src/index',
                 output : {
                     path : './dist',
-                    filename : filename,
+                    filename : pkg.name + '.js',
                     library : pkg.name,
                     libraryTarget : 'umd'
                 },
-                externals : [ /^[a-z\-0-9]+$/ ]
-            };
-            if (plugins) {
-                result.plugins = plugins;
+                externals : options.externals || [ /^[a-z\-0-9]+$/ ],
+                plugins : [ new BannerPlugin(banner) ]
             }
-            return result;
-        }
-
-        var banner = this.getBanner();
-
-        this.config.webpack = {
-            main : getConf(pkg.name + '.js'),
-            minified : getConf(pkg.name + '.min.js', [ this.require(
-                    'webpack/lib/BannerPlugin')(banner) ])
         };
         this.grunt.loadNpmTasks('grunt-webpack');
     };
@@ -83,7 +74,7 @@ module.exports = (function() {
                 options : {
                     reporter : 'spec'
                 },
-                src : [ 'tests/**/Test*.js' ]
+                src : [ 'test/**/spec_*.js', 'test/**/*_spec.js' ]
             }
         };
         this.grunt.loadNpmTasks('grunt-mocha-test');
@@ -118,11 +109,11 @@ module.exports = (function() {
         if (licenses.length) {
             licenses = ' | License: ' + licenses + ' ';
         }
-        return '<%= pkg.name %> v<%= pkg.version %>' + licenses;
+        return '<%= pkg.name %> v<%= pkg.version %>' + licenses + '\n';
     };
 
     UmxGruntConfig.prototype.initUglify = function() {
-        var banner = '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n';
+        var banner = '/* \n * ' + this.getBanner() + ' */\n';
         this.config.uglify = {
             options : {
                 banner : banner

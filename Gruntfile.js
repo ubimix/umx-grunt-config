@@ -6,5 +6,6 @@ module.exports = function(grunt) {
     configurator.registerBumpTasks();
     grunt.registerTask('build', [ 'jshint', 'mochaTest' ]);
     grunt.registerTask('default', [ 'jshint' ]);
+    grunt.registerTask('commit', [ 'build', 'bump-commit' ]);
     grunt.initConfig(configurator.config);
 }
