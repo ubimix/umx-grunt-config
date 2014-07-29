@@ -10,8 +10,12 @@ module.exports = (function() {
     // conf.initWebpack();
     // conf.getBanner();
 
-    function UmxGruntConfig(grunt, options) {
+    function UmxGruntConfig(require, grunt, options) {
         this.options = options || {};
+        this.require = require;
+        if (!this.require) {
+            throw new Error('The "require" method is not defined.');
+        }
         this.grunt = grunt;
         if (!this.grunt) {
             throw new Error('A Grunt instance is not defined.');
@@ -56,11 +60,7 @@ module.exports = (function() {
         options = options || {};
         var pkg = this.config.pkg;
         var banner = this.getBanner();
-        var require = this.options.require;
-        if (!require) {
-            throw new Error('"options.require" is not defined.');
-        }
-        var webpack = require('webpack');
+        var webpack = this.require('webpack');
         this.config.webpack = {
             main : {
                 entry : './src/index',
