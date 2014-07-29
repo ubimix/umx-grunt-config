@@ -116,7 +116,7 @@ module.exports = (function() {
             }
         };
         this.grunt.loadNpmTasks('grunt-karma');
-    },
+    };
 
     UmxGruntConfig.prototype.initBrowserify = function(options) {
         options = options || {};
@@ -130,7 +130,7 @@ module.exports = (function() {
                         standalone : '<%= pkg.appname %>'
                     }
                 }
-            },
+            }
         };
         this.grunt.loadNpmTasks('grunt-browserify');
     };
