@@ -10,11 +10,16 @@ module.exports = (function() {
     // conf.initWebpack();
     // conf.getBanner();
 
-    function UmxGruntConfig(require, grunt) {
+    function UmxGruntConfig(grunt, options) {
+        this.options = options || {};
         this.grunt = grunt;
-        this.require = require;
+        if (!this.grunt) {
+            throw new Error('A Grunt instance is not defined.');
+        }
+        var pkg = this.grunt.file.readJSON('package.json');
+        pkg.appname = this.options.appname || pkg.name;
         this.config = {
-            pkg : this.grunt.file.readJSON('package.json')
+            pkg : pkg
         };
     }
 
@@ -36,7 +41,7 @@ module.exports = (function() {
                 createTag : true,
                 tagName : 'v%VERSION%',
                 tagMessage : 'Version %VERSION%',
-                push : true,
+                push : false,
                 pushTo : 'upstream',
                 gitDescribeOptions : '--tags --always --abbrev=1 --dirty=-d'
             }
@@ -51,18 +56,34 @@ module.exports = (function() {
         options = options || {};
         var pkg = this.config.pkg;
         var banner = this.getBanner();
-        var BannerPlugin = this.require('webpack/lib/BannerPlugin');
+        var require = this.options.require;
+        if (!require) {
+            throw new Error('"options.require" is not defined.');
+        }
+        var webpack = require('webpack');
         this.config.webpack = {
             main : {
                 entry : './src/index',
                 output : {
                     path : './dist',
-                    filename : pkg.name + '.js',
-                    library : pkg.name,
-                    libraryTarget : 'umd'
+                    filename : pkg.appname + '.js',
+                    library : pkg.appname,
+                    libraryTarget : options.target || 'umd'
                 },
                 externals : options.externals || [ /^[a-z\-0-9]+$/ ],
-                plugins : [ new BannerPlugin(banner) ]
+                resolve : {
+                    modulesDirectories : [ "web_modules", "node_modules",
+                            "bower_components", "libs" ],
+                    extensions : [ "", ".webpack-loader.js", ".web-loader.js",
+                            ".loader.js", ".js" ],
+                    packageMains : [ "webpackLoader", "webLoader", "loader",
+                            "main" ]
+                },
+                plugins : [
+                        new webpack.BannerPlugin(banner),
+                        new webpack.ResolverPlugin(
+                                new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(
+                                        "bower.json", [ "main" ])) ]
             }
         };
         this.grunt.loadNpmTasks('grunt-webpack');
@@ -80,15 +101,33 @@ module.exports = (function() {
         this.grunt.loadNpmTasks('grunt-mocha-test');
     };
 
-    UmxGruntConfig.prototype.initBrowserify = function() {
+    UmxGruntConfig.prototype.initKarma = function() {
+        this.config.karma = {
+            unit : {
+                configFile : 'karma.conf.js',
+                reporters : 'progress'
+            },
+            // continuous integration mode: run tests once in PhantomJS browser.
+            continuous : {
+                configFile : 'karma.conf.js',
+                singleRun : true,
+                reporters : 'progress',
+                runnerPort : 9998
+            }
+        };
+        this.grunt.loadNpmTasks('grunt-karma');
+    },
+
+    UmxGruntConfig.prototype.initBrowserify = function(options) {
+        options = options || {};
         this.config.browserify = {
             standalone : {
                 src : [ 'src/index.js' ],
-                dest : './dist/<%= pkg.name %>.js',
+                dest : './dist/<%= pkg.appname %>.js',
                 options : {
-                    exclude : [ 'underscore' ],
+                    exclude : options.exclude || [],
                     bundleOptions : {
-                        standalone : '<%= pkg.name %>'
+                        standalone : '<%= pkg.appname %>'
                     }
                 }
             },
@@ -109,7 +148,7 @@ module.exports = (function() {
         if (licenses.length) {
             licenses = ' | License: ' + licenses + ' ';
         }
-        return '<%= pkg.name %> v<%= pkg.version %>' + licenses + '\n';
+        return '<%= pkg.appname %> v<%= pkg.version %>' + licenses + '\n';
     };
 
     UmxGruntConfig.prototype.initUglify = function() {
@@ -119,8 +158,8 @@ module.exports = (function() {
                 banner : banner
             },
             browser : {
-                src : 'dist/<%= pkg.name %>.js',
-                dest : 'dist/<%= pkg.name %>.min.js'
+                src : 'dist/<%= pkg.appname %>.js',
+                dest : 'dist/<%= pkg.appname %>.min.js'
             }
         };
         this.grunt.loadNpmTasks('grunt-contrib-uglify');
