@@ -21,7 +21,7 @@ module.exports = (function() {
             throw new Error('A Grunt instance is not defined.');
         }
         var pkg = this.grunt.file.readJSON('package.json');
-        pkg.appname = this.options.appname || pkg.name;
+        pkg.appname = this.options.appname || pkg.appname || pkg.name;
         this.config = {
             pkg : pkg
         };

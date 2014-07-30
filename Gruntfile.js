@@ -4,7 +4,8 @@ module.exports = function(grunt) {
     configurator.initBump();
     configurator.initJshint();
     configurator.registerBumpTasks();
-    grunt.registerTask('default', [ 'jshint' ]);
+    grunt.registerTask('build', [ 'jshint' ]);
+    grunt.registerTask('default', [ 'build' ]);
     grunt.registerTask('commit', [ 'build', 'bump-commit' ]);
     grunt.initConfig(configurator.config);
 }
