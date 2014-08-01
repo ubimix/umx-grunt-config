@@ -183,20 +183,16 @@ module.exports = (function() {
         this.grunt.loadNpmTasks('grunt-contrib-jshint');
     };
 
-    UmxGruntConfig.prototype.initWatch = function() {
-        this.config.jshint = {
-            files : [ 'gruntfile.js', 'src/**/*.js', 'test/**/*.js' ],
-            // configure JSHint (documented at
-            // http://www.jshint.com/docs/)
-            options : {
-                // more options here if you want to override JSHint
-                // defaults
-                globals : {
-                    console : true,
-                    module : true,
-                    require : true
-                }
-            }
+    UmxGruntConfig.prototype.initWatch = function(options) {
+        options = options || {};
+        this.config.watch = {
+            scripts : {
+                files : options.files || [ 'src/**/*.js', 'test/**/*.js' ],
+                tasks : options.tasks || [ 'test' ],
+                options : {
+                    spawn : !!options.spawn
+                },
+            },
         };
         this.grunt.loadNpmTasks('grunt-contrib-watch');
     };
