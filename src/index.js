@@ -190,7 +190,8 @@ module.exports = (function() {
                 files : options.files || [ 'src/**/*.js', 'test/**/*.js' ],
                 tasks : options.tasks || [ 'test' ],
                 options : {
-                    spawn : !!options.spawn
+                    spawn : options.spawn !== false,
+                    interrupt : true,
                 },
             },
         };
