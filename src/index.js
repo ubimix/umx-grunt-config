@@ -61,9 +61,10 @@ module.exports = (function() {
         var pkg = this.config.pkg;
         var banner = this.getBanner();
         var webpack = this.require('webpack');
+        var bowerLibs = this._getBowerDir(options);
         this.config.webpack = {
             main : {
-                entry : './src/index',
+                entry : this._getMainFile(options),
                 output : {
                     path : './dist',
                     filename : pkg.appname + '.js',
@@ -73,7 +74,7 @@ module.exports = (function() {
                 externals : options.externals || [ /^[a-z\-0-9]+$/ ],
                 resolve : {
                     modulesDirectories : [ "web_modules", "node_modules",
-                            "bower_components", "libs" ],
+                            "bower_components", "libs" ].concat(bowerLibs),
                     extensions : [ "", ".webpack-loader.js", ".web-loader.js",
                             ".loader.js", ".js" ],
                     packageMains : [ "webpackLoader", "webLoader", "loader",
@@ -122,7 +123,7 @@ module.exports = (function() {
         options = options || {};
         this.config.browserify = {
             standalone : {
-                src : [ 'src/index.js' ],
+                src : [ this._getMainFile(options) ],
                 dest : './dist/<%= pkg.appname %>.js',
                 options : {
                     exclude : options.exclude || [],
@@ -165,9 +166,9 @@ module.exports = (function() {
         this.grunt.loadNpmTasks('grunt-contrib-uglify');
     };
 
-    UmxGruntConfig.prototype.initJshint = function() {
+    UmxGruntConfig.prototype.initJshint = function(options) {
         this.config.jshint = {
-            files : [ 'gruntfile.js', 'src/**/*.js', 'test/**/*.js' ],
+            files : this._getSourceFiles(options),
             // configure JSHint (documented at
             // http://www.jshint.com/docs/)
             options : {
@@ -187,7 +188,7 @@ module.exports = (function() {
         options = options || {};
         this.config.watch = {
             scripts : {
-                files : options.files || [ 'src/**/*.js', 'test/**/*.js' ],
+                files : this._getSourceFiles(options),
                 tasks : options.tasks || [ 'test' ],
                 options : {
                     spawn : options.spawn !== false,
@@ -206,6 +207,41 @@ module.exports = (function() {
         // line
         this.grunt.registerTask('default', [ 'jshint', 'mochaTest',
                 'browserify', 'uglify' ]);
+    };
+
+    UmxGruntConfig.prototype._getMainFile = function(options) {
+        var pkg = this.config.pkg;
+        options = options || {};
+        return options.main || './' + pkg.main + '/index.js';
+    };
+
+    UmxGruntConfig.prototype._getSourceFiles = function(options) {
+        options = options || {};
+        if (options.files) return options.files;
+        var pkg = this.config.pkg;
+        var Path = require('path');
+        var srcMask = Path.resolve(pkg.main || 'src', './**/*.js');
+        return [ srcMask, 'test/**/*.js' ]
+    };
+
+    UmxGruntConfig.prototype._getBowerDir = function(optoins) {
+        var bowerConf;
+        try {
+            bowerConf = this.grunt.file.readJSON('.bowerrc');
+        } catch (err) {
+            bowerConf = {};
+        }
+        if (!bowerConf.directory) {
+            try {
+                bowerConf = this.grunt.file.readJSON('bower.json');
+            } catch (err) {
+            }
+        }
+        if (!bowerConf.directory) {
+            bowerConf.directory = './libs';
+        }
+        var result = [ bowerConf.directory ];
+        return result;
     };
 
     return UmxGruntConfig;
