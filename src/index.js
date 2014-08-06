@@ -221,7 +221,7 @@ module.exports = (function() {
         var pkg = this.config.pkg;
         var Path = require('path');
         var srcMask = Path.resolve(pkg.main || 'src', './**/*.js');
-        return [ srcMask, 'test/**/*.js' ]
+        return [ srcMask, 'test/**/*.js' ];
     };
 
     UmxGruntConfig.prototype._getBowerDir = function(optoins) {
