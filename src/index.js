@@ -66,7 +66,7 @@ module.exports = (function() {
             main : {
                 entry : this._getMainFile(options),
                 output : {
-                    path : './dist',
+                    path : this._getDistDir(options),
                     filename : pkg.appname + '.js',
                     library : pkg.appname,
                     libraryTarget : options.target || 'umd'
@@ -124,7 +124,7 @@ module.exports = (function() {
         this.config.browserify = {
             standalone : {
                 src : [ this._getMainFile(options) ],
-                dest : './dist/<%= pkg.appname %>.js',
+                dest : this._getDistDir(options) + '/<%= pkg.appname %>.js',
                 options : {
                     exclude : options.exclude || [],
                     bundleOptions : {
@@ -217,7 +217,8 @@ module.exports = (function() {
 
     UmxGruntConfig.prototype._getSourceFiles = function(options) {
         options = options || {};
-        if (options.files) return options.files;
+        if (options.files)
+            return options.files;
         var pkg = this.config.pkg;
         var Path = require('path');
         var srcMask = Path.resolve(pkg.main || 'src', './**/*.js');
@@ -242,6 +243,11 @@ module.exports = (function() {
         }
         var result = [ bowerConf.directory ];
         return result;
+    };
+
+    UmxGruntConfig.prototype._getDistDir = function(options) {
+        options = options || {};
+        return options.dist || './dist'
     };
 
     return UmxGruntConfig;
