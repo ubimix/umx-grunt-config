@@ -247,7 +247,7 @@ module.exports = (function() {
 
     UmxGruntConfig.prototype._getDistDir = function(options) {
         options = options || {};
-        return options.dist || './dist'
+        return options.dist || './dist';
     };
 
     return UmxGruntConfig;
