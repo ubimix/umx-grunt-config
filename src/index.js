@@ -90,13 +90,15 @@ module.exports = (function() {
         this.grunt.loadNpmTasks('grunt-webpack');
     };
 
-    UmxGruntConfig.prototype.initMochaTest = function() {
+    UmxGruntConfig.prototype.initMochaTest = function(options) {
+        options = options || {};
         this.config.mochaTest = {
             test : {
                 options : {
                     reporter : 'spec'
                 },
-                src : [ 'test/**/spec_*.js', 'test/**/*_spec.js' ]
+                src : options.src || //
+                [ 'test/**/spec_*.js', 'test/**/*_spec.js' ]
             }
         };
         this.grunt.loadNpmTasks('grunt-mocha-test');
