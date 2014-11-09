@@ -59,7 +59,7 @@ module.exports = (function() {
     UmxGruntConfig.prototype.initWebpack = function(options) {
         options = options || {};
         var pkg = this.config.pkg;
-        var banner = this.getBanner();
+        var banner = this.getBanner(options);
         var webpack = this.require('webpack');
         var bowerLibs = this._getBowerDir(options);
         this.config.webpack = {
@@ -138,7 +138,7 @@ module.exports = (function() {
         this.grunt.loadNpmTasks('grunt-browserify');
     };
 
-    UmxGruntConfig.prototype.getBanner = function() {
+    UmxGruntConfig.prototype.getBanner = function(options) {
         // Project configuration.
         var pkg = this.config.pkg;
         var licenses = '';
@@ -154,15 +154,17 @@ module.exports = (function() {
         return '<%= pkg.appname %> v<%= pkg.version %>' + licenses + '\n';
     };
 
-    UmxGruntConfig.prototype.initUglify = function() {
-        var banner = '/* \n * ' + this.getBanner() + ' */\n';
+    UmxGruntConfig.prototype.initUglify = function(options) {
+        console.log('???????????????????????');
+        var banner = '/* \n * ' + this.getBanner(options) + ' */\n';
+        var distDir = this._getDistDir(options);
         this.config.uglify = {
             options : {
                 banner : banner
             },
             browser : {
-                src : 'dist/<%= pkg.appname %>.js',
-                dest : 'dist/<%= pkg.appname %>.min.js'
+                src : distDir + '/<%= pkg.appname %>.js',
+                dest : distDir + '/<%= pkg.appname %>.min.js'
             }
         };
         this.grunt.loadNpmTasks('grunt-contrib-uglify');
