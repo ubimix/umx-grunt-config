@@ -6,6 +6,7 @@ module.exports = (function() {
     // conf.initBrowserify();
     // conf.initUglify();
     // conf.initJshint();
+    // conf.initLess();
     // conf.initWatch();
     // conf.initWebpack();
     // conf.getBanner();
@@ -54,6 +55,47 @@ module.exports = (function() {
         if (options.tasks !== false) {
             this.registerBumpTasks();
         }
+    };
+
+    UmxGruntConfig.prototype.initLess = function(options) {
+        options = options || {};
+        this.config.less = {
+            main : {
+                options : {
+                    paths : this._getLessPaths(options)
+                },
+                files : this._getLessMapping(options)
+            }
+        };
+        this.grunt.loadNpmTasks('grunt-contrib-less');
+    };
+
+    UmxGruntConfig.prototype._getLessPaths = function(options) {
+        options = options || {};
+        var paths = options.lessPaths || options.cssPaths;
+        if (!paths) {
+            var pkg = this.config.pkg;
+            var Path = require('path');
+            var cssDir = options.cssDir || 'css';
+            var srcMask = Path.resolve(cssDir, './**/*.css');
+            var lessMask = Path.resolve(cssDir, './**/*.less');
+            paths = [ srcMask, lessMask ];
+        }
+        return paths;
+    };
+
+    UmxGruntConfig.prototype._getLessMapping = function(options) {
+        var pkg = this.config.pkg;
+        var sourceFile = options.lessFile || options.cssFile;
+        if (!sourceFile) {
+            var cssDir = options.lessDir || options.cssDir || 'css';
+            sourceFile = cssDir + '/index.less';
+        }
+        var distDir = this._getDistDir(options);
+        var distFile = distDir + '/' + pkg.appname + '.css';
+        var result = {};
+        result[distFile] = sourceFile;
+        return result;
     };
 
     UmxGruntConfig.prototype.initWebpack = function(options) {
@@ -189,10 +231,11 @@ module.exports = (function() {
 
     UmxGruntConfig.prototype.initWatch = function(options) {
         options = options || {};
+        var files = this._getWatchFiles(options);
         this.config.watch = {
             scripts : {
-                files : this._getSourceFiles(options),
-                tasks : options.tasks || [ 'test' ],
+                files : files,
+                tasks : options.watchTasks || options.tasks || [ 'test' ],
                 options : {
                     spawn : options.spawn !== false,
                     interrupt : true,
@@ -216,6 +259,21 @@ module.exports = (function() {
         var pkg = this.config.pkg;
         options = options || {};
         return options.main || './' + pkg.main + '/index.js';
+    };
+
+    UmxGruntConfig.prototype._getWatchFiles = function(options) {
+        if (options.watchFiles)
+            return options.watchFiles;
+        var result = [];
+        var sources = this._getSourceFiles(options);
+        if (sources) {
+            result = result.concat(sources);
+        }
+        var less = this._getLessPaths(options);
+        if (less) {
+            result = result.concat(less);
+        }
+        return result;
     };
 
     UmxGruntConfig.prototype._getSourceFiles = function(options) {
