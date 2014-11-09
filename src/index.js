@@ -155,7 +155,6 @@ module.exports = (function() {
     };
 
     UmxGruntConfig.prototype.initUglify = function(options) {
-        console.log('???????????????????????');
         var banner = '/* \n * ' + this.getBanner(options) + ' */\n';
         var distDir = this._getDistDir(options);
         this.config.uglify = {
