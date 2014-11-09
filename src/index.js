@@ -122,6 +122,10 @@ module.exports = (function() {
                     packageMains : [ "webpackLoader", "webLoader", "loader",
                             "main" ]
                 },
+                devtool : options.devtool || "eval",
+                debug : options.debug || true,
+
+                module : options.module || {},
                 plugins : [
                         new webpack.BannerPlugin(banner),
                         new webpack.ResolverPlugin(
