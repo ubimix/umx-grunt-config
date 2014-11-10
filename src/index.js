@@ -122,7 +122,7 @@ module.exports = (function() {
                     packageMains : [ "webpackLoader", "webLoader", "loader",
                             "main" ]
                 },
-                // devtool : options.devtool || "eval",
+                devtool : options.devtool || "source-map",
                 debug : options.debug || true,
 
                 module : options.module || {},
