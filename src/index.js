@@ -122,12 +122,13 @@ module.exports = (function() {
                     packageMains : [ "webpackLoader", "webLoader", "loader",
                             "main" ]
                 },
-                devtool : options.devtool || "eval",
+                // devtool : options.devtool || "eval",
                 debug : options.debug || true,
 
                 module : options.module || {},
                 plugins : [
                         new webpack.BannerPlugin(banner),
+                        new webpack.optimize.DedupePlugin(),
                         new webpack.ResolverPlugin(
                                 new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(
                                         "bower.json", [ "main" ])) ]
